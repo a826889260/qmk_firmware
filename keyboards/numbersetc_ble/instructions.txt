@@ -1,0 +1,12 @@
+
+# BUILD
+
+make NRFSDK15_ROOT=/path/to/nRF5_SDK_15.0.0_a53641a numbersetc_ble
+
+# CONVERT
+
+python keyboards/numbersetc_ble/uf2conv.py ./.build/numbersetc_ble_pro_v1_default.hex -c -f 0xADA52840
+
+# COPY (connect USB, then reset 2x quickly to mount as flash device)
+
+cp flash.uf2 /Volumes/NRF52BOOT/
