@@ -3,6 +3,22 @@
 #include "eeprom.h"
 #include "eeconfig.h"
 
+
+/** \brief eeconfig enable
+ *
+ * FIXME: needs doc
+ */
+__attribute__((weak)) void eeconfig_init_user(void) {
+    // Reset user EEPROM value to blank, rather than to a set value
+    eeconfig_update_user(0);
+}
+
+__attribute__((weak)) void eeconfig_init_kb(void) {
+    // Reset Keyboard EEPROM value to blank, rather than to a set value
+    eeconfig_update_kb(0);
+    eeconfig_init_user();
+}
+
 /** \brief eeconfig initialization
  *
  * FIXME: needs doc
@@ -26,6 +42,7 @@ void eeconfig_init(void)
 #ifdef STENO_ENABLE
     eeprom_update_byte(EECONFIG_STENOMODE,      0);
 #endif
+    eeconfig_init_kb();
 }
 
 /** \brief eeconfig enable
@@ -43,7 +60,7 @@ void eeconfig_enable(void)
  */
 void eeconfig_disable(void)
 {
-    eeprom_update_word(EECONFIG_MAGIC, 0xFFFF);
+    eeprom_update_word(EECONFIG_MAGIC, EECONFIG_MAGIC_NUMBER_OFF);
 }
 
 /** \brief eeconfig is enabled
@@ -54,6 +71,12 @@ bool eeconfig_is_enabled(void)
 {
     return (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER);
 }
+
+/** \brief eeconfig is disabled
+ *
+ * FIXME: needs doc
+ */
+bool eeconfig_is_disabled(void) { return (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER_OFF); }
 
 /** \brief eeconfig read debug
  *
@@ -113,3 +136,26 @@ uint8_t eeconfig_read_audio(void)      { return eeprom_read_byte(EECONFIG_AUDIO)
  */
 void eeconfig_update_audio(uint8_t val) { eeprom_update_byte(EECONFIG_AUDIO, val); }
 #endif
+
+/** \brief eeconfig read kb
+ *
+ * FIXME: needs doc
+ */
+uint32_t eeconfig_read_kb(void) { return eeprom_read_dword(EECONFIG_KEYBOARD); }
+/** \brief eeconfig update kb
+ *
+ * FIXME: needs doc
+ */
+void eeconfig_update_kb(uint32_t val) { eeprom_update_dword(EECONFIG_KEYBOARD, val); }
+
+/** \brief eeconfig read user
+ *
+ * FIXME: needs doc
+ */
+uint32_t eeconfig_read_user(void) { return eeprom_read_dword(EECONFIG_USER); }
+/** \brief eeconfig update user
+ *
+ * FIXME: needs doc
+ */
+void eeconfig_update_user(uint32_t val) { eeprom_update_dword(EECONFIG_USER, val); }
+

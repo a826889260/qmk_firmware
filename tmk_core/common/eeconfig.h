@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include <stdbool.h>
 
-
 #define EECONFIG_MAGIC_NUMBER                       (uint16_t)0xFEED
+#define EECONFIG_MAGIC_NUMBER_OFF                   (uint16_t)0xFFFF
 
 /* eeprom parameteter address */
 #define EECONFIG_MAGIC                              (uint16_t *)0
@@ -36,8 +36,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define EECONFIG_UNICODEMODE                        (uint8_t *)12
 #define EECONFIG_STENOMODE                          (uint8_t *)13
 // EEHANDS for two handed boards
-#define EECONFIG_HANDEDNESS         				(uint8_t *)14
-
+#define EECONFIG_HANDEDNESS         	            (uint8_t *)14
+#define EECONFIG_KEYBOARD                           (uint32_t *)15
+#define EECONFIG_USER                               (uint32_t *)19
 
 /* debug bit */
 #define EECONFIG_DEBUG_ENABLE                       (1<<0)
@@ -55,10 +56,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define EECONFIG_KEYMAP_SWAP_BACKSLASH_BACKSPACE    (1<<6)
 #define EECONFIG_KEYMAP_NKRO                        (1<<7)
 
-
 bool eeconfig_is_enabled(void);
+bool eeconfig_is_disabled(void);
 
 void eeconfig_init(void);
+void eeconfig_init_kb(void);
+void eeconfig_init_user(void);
 
 void eeconfig_enable(void);
 
@@ -82,5 +85,10 @@ void eeconfig_update_backlight(uint8_t val);
 uint8_t eeconfig_read_audio(void);
 void eeconfig_update_audio(uint8_t val);
 #endif
+
+uint32_t eeconfig_read_kb(void);
+void     eeconfig_update_kb(uint32_t val);
+uint32_t eeconfig_read_user(void);
+void     eeconfig_update_user(uint32_t val);
 
 #endif
