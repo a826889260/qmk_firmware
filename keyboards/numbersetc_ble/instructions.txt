@@ -1,12 +1,28 @@
 
-# BUILD
+"master" and "slave" devices are for a split keyboard.
+"solo" device is for a standalong numpad/macropad.
+
+Three steps to build:
+
+1. BUILD
 
 make NRFSDK15_ROOT=/path/to/nRF5_SDK_15.0.0_a53641a numbersetc_ble
 
-# CONVERT
+2. CONVERT
 
-python keyboards/numbersetc_ble/uf2conv.py ./.build/numbersetc_ble_pro_v1_default.hex -c -f 0xADA52840
+python keyboards/numbersetc_ble/uf2conv.py ./.build/numbersetc_solo_default.hex -c -f 0xADA52840
 
-# COPY (connect USB, then reset 2x quickly to mount as flash device)
+3. COPY (connect USB, then reset 2x quickly to mount as flash device)
 
+cp flash.uf2 /Volumes/NRF52BOOT/
+
+
+** For split keyboard, you need to do the above steps twice, once for master and once for slave: **
+
+make NRFSDK15_ROOT=/path/to/nRF5_SDK_15.0.0_a53641a numbersetc_ble/master:ortho10x4
+python keyboards/numbersetc_ble/uf2conv.py ./.build/numbersetc_master_default.hex -c -f 0xADA52840
+cp flash.uf2 /Volumes/NRF52BOOT/
+
+make NRFSDK15_ROOT=/path/to/nRF5_SDK_15.0.0_a53641a numbersetc_ble/slave:ortho10x4
+python keyboards/numbersetc_ble/uf2conv.py ./.build/numbersetc_slave_default.hex -c -f 0xADA52840
 cp flash.uf2 /Volumes/NRF52BOOT/

@@ -21,6 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define BLE_NUS_MIN_INTERVAL 25
+#define BLE_NUS_MAX_INTERVAL 50
+#define BLE_HID_MAX_INTERVAL 60
+#define BLE_HID_SLAVE_LATENCY 5
+
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xFEED
 #define PRODUCT_ID      0x0000
@@ -32,7 +37,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DESCRIPTION QMK based keyboard
 
 /* key matrix size */
-#define MATRIX_ROWS 5
+// Rows are doubled-up
+#define MATRIX_ROWS_DEFAULT 10
+#define MATRIX_COLS_DEFAULT 4
+
+#define MATRIX_ROWS 10
 #define MATRIX_COLS 4
 
 #define DIODE_DIRECTION ROW2COL

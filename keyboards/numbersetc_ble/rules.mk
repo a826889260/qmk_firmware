@@ -1,5 +1,5 @@
 
-DEFAULT_FOLDER = numbersetc_ble/pro_v1
+DEFAULT_FOLDER = numbersetc_ble/solo
 
 NRF_DEBUG = no
 
