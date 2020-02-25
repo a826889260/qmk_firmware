@@ -4,9 +4,7 @@
 #include "quantum.h"
 
 // This a shortcut to help you visually see your layout.
-// The following is an example using the Planck MIT layout
-// The first section contains all of the arguments
-// The second converts the arguments into a two-dimensional array
+// This macro is for a 4x6 configuration, either a numpad or a macropad
 #define LAYOUT_4X6( \
     k01, k02, k03, k04, \
     k05, k06, k07, k08, \
@@ -22,6 +20,8 @@
     { k20, k19, k18, k17 }, \
 }
 
+// This macro defines a layout for a 10x4 split ortho configuration,
+// with two devices rotated on their side (diodes above).
 #define LAYOUT_10X4( \
     k01, k02, k03, k04, k05, k06, k07, k08, k09, k10, \
     k11, k12, k13, k14, k15, k16, k17, k18, k19, k20, \
@@ -75,13 +75,13 @@ void led_off(int delay_ms);
 void led_advertise(int peer_id);
 void led_delete(int peer_id);
 
-void eeconfig_set_advertising_channel(int peer_id);
-int eeconfig_get_advertising_channel();
+void numbersetc_matrix_init_user(bool is_slave);
+void numbersetc_matrix_scan_user(bool is_slave);
 
-void eeconfig_set_usb_enabled(bool enabled);
-bool eeconfig_get_usb_enabled();
+void numbersetc_set_usb_enabled(bool enabled);
+bool numbersetc_get_usb_enabled();
 
-void eeconfig_set_ble_enabled(bool enabled);
-bool eeconfig_get_ble_enabled();
+void numbersetc_set_ble_enabled(bool enabled);
+bool numbersetc_get_ble_enabled();
 
 #endif /* NUMBERSETC_BLE_H_ */

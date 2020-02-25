@@ -77,7 +77,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ADV_ID1,  ADV_ID2,  ADV_ID3,  ADV_ID4,  AD_WO_L,  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,   \
   DEL_ID1,  DEL_ID2,  DEL_ID3,  DEL_ID4,  DELBNDS,  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,   \
   KC_NO,    USB_DIS,  USB_EN,   BLE_DIS,  BLE_EN,   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,   \
-  ENT_DFU,  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO),
+  ENT_DFU,  BATT_LV,  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO),
 
 };
 

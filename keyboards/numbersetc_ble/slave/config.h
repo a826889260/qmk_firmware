@@ -9,5 +9,6 @@
 #define MATRIX_COL_PINS { PIN20, PIN19, PIN18, PIN17 }
 
 #define IS_LEFT_HAND false
+#define IS_SLAVE true
 
 #endif /* SLAVE_CONFIG_H_ */

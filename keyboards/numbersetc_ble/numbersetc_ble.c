@@ -2,94 +2,125 @@
  * numbersetc_ble.c
  *
  *  Created on: 2030/01/23
- *      Author: Gachiham
+ *      Author: Chasingendgame
  */
 
-
-
 #include "matrix.h"
-#include "quantum.h"
-#include "nrf.h"
 #include "app_ble_func.h"
+#include "numbersetc_ble.h"
 
+#include "nrf.h"
 #include "nrf_power.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 #include "nrf_log.h"
 
-#include "numbersetc_ble.h"
+// From tmk_core/protocol/nrf/matrix.c
+void unselect_cols(void);
+void select_col(uint8_t col);
+matrix_col_t read_rows(void);
+matrix_col_t read_col(uint8_t col);
 
-__attribute__ ((weak))
-void matrix_init_user() {
+// Forward declarations
+void numbersetc_init_usb();
+void numbersetc_init_ble();
+void numbersetc_init_user(bool is_slave);
+
+void numbersetc_matrix_init_user(bool is_slave) {
+  numbersetc_init_usb();
+  numbersetc_init_ble();
+  numbersetc_init_user(is_slave);
 }
 
-void matrix_init_kb() {
-  set_usb_enabled(true);
+static int bootloader_flag = 0;
 
-  // blink on power on
+void numbersetc_init_user(bool is_slave) {
+
+  // configure status LED as output
   nrf_gpio_cfg_output(LED_PIN);
+  // the switch pin reports whether or not the battery is connected
   nrf_gpio_cfg_input(SWITCH_PIN, NRF_GPIO_PIN_PULLDOWN);
 
-  for (int i = 0; i < 3; i++) {
-    led_on(100);
-    led_off(100);
+  // blink 2x for master, 1x for slave
+  led_on(200);
+  led_off(100);
+  if (!is_slave) {
+    led_off(200);
+    led_on(200);
   }
+  led_off(0);
   
-  // default settings
-  int peer_id = eeconfig_get_advertising_channel();
-  //bool usb_enabled = eeconfig_get_usb_enabled();
-  bool ble_enabled = eeconfig_get_ble_enabled();
+  select_col(1);
+  wait_us(50);
+  matrix_col_t col = read_rows();
+  unselect_cols();
   
-  led_advertise(peer_id);
-  //set_usb_enabled(usb_enabled);
-  set_ble_enabled(ble_enabled);
-  
-  if (ble_enabled) {
-    led_off(500);
-    led_advertise(peer_id);
+  #if IS_SLAVE
+  if (col == 0b10) {
+    // hold down S6 at power-on to delete bond with master
+    delete_bonds();
   }
-  
-  matrix_init_user();
+  else
+  #endif
+  if (col == 0b1) {
+    // hold down S2 at power-on to enter UF2 bootloader
+    bootloader_flag = 1;
+  }
+  #if !IS_SLAVE
+  else if (numbersetc_get_ble_enabled()) {
+    // master restarts advertising if bluetooth is enabled at startup
+    bootloader_flag = 2;
+  }
+  #endif
+}
+
+void numbersetc_matrix_scan_user(bool is_slave) {
+  static int count;
+  if (bootloader_flag == 1 && count ++== 10) {
+    sd_power_gpregret_set(0, 0x57); // DFU_MAGIC_UF2_RESET
+    bootloader_jump();
+  }
+  #if !IS_SLAVE
+  if (bootloader_flag == 2 && count ++== 100) {
+    bootloader_flag = 0;
+    //restart_advertising_wo_whitelist();
+  }
+  #endif
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
   char str[16];
 
   bool result = true;
-  
-  int peer_id = 0;
-  
+
   if (record->event.pressed) {
     switch (keycode) {
     case DELBNDS:
       delete_bonds();
-      led_delete(5);
+      led_delete(-1);
       result = false;
       break;
     case AD_WO_L:
       restart_advertising_wo_whitelist();
-      led_advertise(5);
+      led_advertise(-1);
       result = false;
       break;
     case USB_EN:
-      set_usb_enabled(true);
-      eeconfig_set_usb_enabled(true);
+      numbersetc_set_usb_enabled(true);
       result = false;
       break;
     case USB_DIS:
-      set_usb_enabled(false);
-      eeconfig_set_usb_enabled(false);
+      numbersetc_set_usb_enabled(false);
       result = false;
       break;
     case BLE_EN:
-      set_ble_enabled(true);
-      eeconfig_set_ble_enabled(true);
-      led_advertise(eeconfig_get_advertising_channel());
+      numbersetc_set_ble_enabled(true);
+      led_on(40);
+      led_off(40);
       result = false;
       break;
     case BLE_DIS:
-      set_ble_enabled(false);
-      eeconfig_set_ble_enabled(false);
+      numbersetc_set_ble_enabled(false);
       led_on(40);
       led_off(40);
       led_on(40);
@@ -100,31 +131,26 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
       break;
     case ADV_ID0:
       restart_advertising_id(0);
-      eeconfig_set_advertising_channel(0);
       led_advertise(0);
       result = false;
       break;
     case ADV_ID1:
       restart_advertising_id(1);
-      eeconfig_set_advertising_channel(1);
       led_advertise(1);
       result = false;
       break;
     case ADV_ID2:
       restart_advertising_id(2);
-      eeconfig_set_advertising_channel(2);
       led_advertise(2);
       result = false;
       break;
     case ADV_ID3:
       restart_advertising_id(3);
-      eeconfig_set_advertising_channel(3);
       led_advertise(3);
       result = false;
       break;
     case ADV_ID4:
       restart_advertising_id(4);
-      eeconfig_set_advertising_channel(4);
       led_advertise(4);
       result = false;
       break;
@@ -148,19 +174,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
       led_delete(3);
       result = false;
       break;
-    case DEL_IDC:
-      peer_id = eeconfig_get_advertising_channel();
-      delete_bond_id(peer_id);
-      led_delete(peer_id);
-      result = false;
-      break;
     case BATT_LV:
+      // this doesn't really work since the nrfmicro uses a voltage regulator.
+      // the voltage is always at 3.3v
       sprintf(str, "%4dmV", get_vcc());
       send_string(str);
       result = false;
       break;
     case ENT_DFU:
-      led_on(480);
+      led_on(500);
       led_off(0);
       sd_power_gpregret_set(0, DFU_MAGIC_UF2_RESET);
       bootloader_jump();
@@ -201,43 +223,50 @@ void led_off(int delay_ms) {
 }
 
 void led_advertise(int peer_id) {
-  for (int i = 0; i < peer_id; i++) {
-    led_on(120);
-    led_off(120);
+  led_on(250);
+  for (int i = 0; i < peer_id + 1; i++) {
+    led_off(100);
+    led_on(100);
   }
-  led_on(120);
   led_off(0);
 }
 
 void led_delete(int peer_id) {
-  for (int i = 0; i < peer_id; i++) {
-    led_on(240);
-    led_off(240);
+  led_on(50);
+  led_off(50);
+  led_on(250);
+  for (int i = 0; i < peer_id + 1; i++) {
+    led_off(100);
+    led_on(100);
   }
-  led_on(240);
   led_off(0);
 }
 
-void eeconfig_set_advertising_channel(int peer_id) {
-  eeconfig_update_user((eeconfig_read_user() & ~0x7) | (peer_id & 0x7));
+#define USB_ENABLE_MASK 0x8
+#define BLE_ENABLE_MASK 0x10
+
+void numbersetc_init_usb() {
+    set_usb_enabled((eeconfig_read_user() & USB_ENABLE_MASK) ? true : false);
 }
 
-int eeconfig_get_advertising_channel() {
-  return (eeconfig_read_user() & 0x7);
+bool numbersetc_get_usb_enabled() {
+    return (eeconfig_read_user() & USB_ENABLE_MASK) ? true : false;
 }
 
-void eeconfig_set_usb_enabled(bool enabled) {
-  eeconfig_update_user((eeconfig_read_user() & ~0x8) | (enabled ? 0x8 : 0x0));
+void numbersetc_set_usb_enabled(bool enabled) {
+    set_usb_enabled(enabled ? true : false);
+    eeconfig_update_user((eeconfig_read_user() & ~USB_ENABLE_MASK) | (enabled ? USB_ENABLE_MASK : 0));
 }
 
-bool eeconfig_get_usb_enabled() {
-  return (eeconfig_read_user() & 0x8) ? 1 : 0;
+void numbersetc_init_ble() {
+    set_ble_enabled(numbersetc_get_ble_enabled());
 }
 
-void eeconfig_set_ble_enabled(bool enabled) {
-  eeconfig_update_user((eeconfig_read_user() & ~0x10) | (enabled ? 0x8 : 0x0));
+bool numbersetc_get_ble_enabled() {
+    return (eeconfig_read_user() & BLE_ENABLE_MASK) ? true : false;
 }
 
-bool eeconfig_get_ble_enabled() {
-  return (eeconfig_read_user() & 0x10) ? 1 : 0;
+void numbersetc_set_ble_enabled(bool enabled) {
+    set_ble_enabled(enabled ? true : false);
+    eeconfig_update_user((eeconfig_read_user() & ~BLE_ENABLE_MASK) | (enabled ? BLE_ENABLE_MASK : 0));
 }

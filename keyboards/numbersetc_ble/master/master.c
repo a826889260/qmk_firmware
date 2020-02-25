@@ -16,21 +16,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "matrix.h"
-#include "nrf.h"
-#include "nrf_gpio.h"
-#include "app_ble_func.h"
-
 #include "numbersetc_ble.h"
 
 void matrix_init_user() {
-  set_usb_enabled(true);
+  numbersetc_matrix_init_user(false);
+}
 
-  // blink (4x) on power on
-  nrf_gpio_cfg_output(LED_PIN);
-  nrf_gpio_cfg_input(SWITCH_PIN, NRF_GPIO_PIN_PULLDOWN);
-
-  for (int i = 0; i < 4; i++) {
-    led_on(100);
-    led_off(100);
-  }
+void matrix_scan_user() {
+  numbersetc_matrix_scan_user(false);
 }
