@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_H
 
 #define BLE_NUS_MIN_INTERVAL 25
-#define BLE_NUS_MAX_INTERVAL 50
-#define BLE_HID_MAX_INTERVAL 60
+#define BLE_NUS_MAX_INTERVAL 35
+#define BLE_HID_MAX_INTERVAL 40
 #define BLE_HID_SLAVE_LATENCY 5
 
 /* USB Device descriptor parameter */
