@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+  echo "Usage: make master ortho10x4 | make slave ortho10x4 | make solo default"
+  exit 1
+fi
+
+make numbersetc_ble/$1:$2
+
+if [ $? != 0 ]; then
+  exit 1
+fi
+
+python keyboards/numbersetc_ble/uf2conv.py ./.build/numbersetc_ble_$1_$2.hex -c -f 0xADA52840
+
+if [ $? != 0 ]; then
+  exit 1
+fi
+
+while [ ! -d /Volumes/NRF52BOOT ]
+do
+  echo "Waiting for /Volumes/NRF52BOOT...";
+  sleep 2
+done
+
+cp flash.uf2 /Volumes/NRF52BOOT
