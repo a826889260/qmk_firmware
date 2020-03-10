@@ -70,6 +70,8 @@ enum nrf_keycodes {
     ENT_SLP               /* Deep sleep mode                      */
 };
 
+#define NUMBERSETC_SAFE_RANGE (ENT_SLP + 1)
+
 void led_on(int delay_ms);
 void led_off(int delay_ms);
 void led_advertise(int peer_id);
