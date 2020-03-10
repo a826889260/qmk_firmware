@@ -41,13 +41,17 @@ void numbersetc_init_user(bool is_slave) {
   // the switch pin reports whether or not the battery is connected
   nrf_gpio_cfg_input(SWITCH_PIN, NRF_GPIO_PIN_PULLDOWN);
 
-  // blink 2x for master, 1x for slave
+  // blink 3x for solo, 2x for master, 1x for slave
   led_on(200);
   led_off(100);
   if (!is_slave) {
     led_off(200);
     led_on(200);
   }
+  #if IS_SOLO
+    led_off(200);
+    led_on(200);
+  #endif
   led_off(0);
   
   select_col(1);
@@ -66,11 +70,15 @@ void numbersetc_init_user(bool is_slave) {
     // hold down S2 at power-on to enter UF2 bootloader
     bootloader_flag = 1;
   }
-  #if !IS_SLAVE
+  #if IS_MASTER
   else if (numbersetc_get_ble_enabled()) {
     // master restarts advertising if bluetooth is enabled at startup
     bootloader_flag = 2;
   }
+  #endif
+  
+  #if IS_SOLO
+  numbersetc_set_usb_enabled(true);
   #endif
 }
 
@@ -80,7 +88,7 @@ void numbersetc_matrix_scan_user(bool is_slave) {
     sd_power_gpregret_set(0, 0x57); // DFU_MAGIC_UF2_RESET
     bootloader_jump();
   }
-  #if !IS_SLAVE
+  #if IS_MASTER
   if (bootloader_flag == 2 && count ++== 100) {
     bootloader_flag = 0;
     //restart_advertising_wo_whitelist();
@@ -107,10 +115,18 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
       break;
     case USB_EN:
       numbersetc_set_usb_enabled(true);
+      led_on(40);
+      led_off(40);
       result = false;
       break;
     case USB_DIS:
       numbersetc_set_usb_enabled(false);
+      led_on(40);
+      led_off(40);
+      led_on(40);
+      led_off(40);
+      led_on(40);
+      led_off(0);
       result = false;
       break;
     case BLE_EN:

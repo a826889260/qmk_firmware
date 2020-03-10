@@ -37,12 +37,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DESCRIPTION QMK based keyboard
 
 /* key matrix size */
-// Rows are doubled-up
-#define MATRIX_ROWS_DEFAULT 10
-#define MATRIX_COLS_DEFAULT 4
-
-#define MATRIX_ROWS 10
+#define MATRIX_ROWS 5
 #define MATRIX_COLS 4
+
+#define THIS_DEVICE_ROWS 5
+#define THIS_DEVICE_COLS 4
 
 #define DIODE_DIRECTION ROW2COL
 
